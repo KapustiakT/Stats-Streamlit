@@ -61,6 +61,9 @@ if csv_path:
 	min_year, max_year = min(years), max(years)
 
 	st.sidebar.header("Filters")
+	default_start = max(min_year, 2000)
+	default_end = min(max_year, 2025)
+	
 	year_range = st.sidebar.slider(
 		"Year ID range",
 		min_value=min_year,
@@ -101,8 +104,8 @@ if csv_path:
 		alt.Chart(agg)
 		.mark_rect()
 		.encode(
-			x=alt.X("franchid_1:N", sort=x_order, title="franchid_1", axis=alt.Axis(labelAngle=-45)),
-			y=alt.Y("franchid_2:N", sort=y_order, title="franchid_2", axis=alt.Axis(labelOverlap=False)),
+			x=alt.X("franchid_1:N", sort=x_order, title=None, axis=alt.Axis(labelAngle=-45)),
+			y=alt.Y("franchid_2:N", sort=y_order, title=None, axis=alt.Axis(labelOverlap=False)),
 			color=alt.Color(
 				"total_abs_difference:Q",
 				scale=alt.Scale(scheme="redblue", reverse=True),
