@@ -10,7 +10,7 @@ st.write(
 	"The chart below is a **heatmap** (sometimes called a matrix heatmap)."
 )
 
-uploaded_file = st.file_uploader("C:/Users/tadka/OneDrive/Documents/Baseball/win_diff.csv", type="csv")
+uploaded_file = st.file_uploader("win_diff.csv", type="csv")
 
 if uploaded_file is not None:
 	df = pd.read_csv(uploaded_file)
