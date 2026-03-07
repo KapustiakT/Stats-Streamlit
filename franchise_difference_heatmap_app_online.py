@@ -121,8 +121,8 @@ if csv_path:
 		alt.Chart(agg)
 		.mark_text(baseline="middle", fontSize=11)
 		.encode(
-			x=alt.X("Franchise 1:N", sort=x_order),
-			y=alt.Y("franchise 2:N", sort=y_order),
+			x=alt.X("franchid_1:N", sort=x_order),
+			y=alt.Y("franchid_2:N", sort=y_order),
 			text=alt.Text("total_abs_difference:Q", format=",.0f"),
 			color=alt.condition(
 				alt.datum.total_abs_difference > agg["total_abs_difference"].median(),
