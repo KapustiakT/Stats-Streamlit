@@ -63,12 +63,12 @@ if csv_path:
 	st.sidebar.header("Filters")
 	default_start = max(min_year, 2000)
 	default_end = min(max_year, 2025)
-	
+
 	year_range = st.sidebar.slider(
 		"Year ID range",
 		min_value=min_year,
 		max_value=max_year,
-		value=(min_year, max_year)
+		value=(default_start, default_end)
 	)
 
 	filtered = df[(df["Year ID"] >= year_range[0]) & (df["Year ID"] <= year_range[1])].copy()
