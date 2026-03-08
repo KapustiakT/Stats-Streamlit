@@ -99,7 +99,7 @@ def build_team_year_records(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_metric_data(filtered: pd.DataFrame, metric_name: str):
-	yearly = None
+	yearly = pd.DataFrame()
 	all_teams = sorted(set(filtered["franchid_1"]).union(set(filtered["franchid_2"])))
 
 	team_year = build_team_year_records(filtered)
@@ -154,6 +154,9 @@ def build_metric_data(filtered: pd.DataFrame, metric_name: str):
 			)
 			yearly["metric_value"] = (yearly["half_1"] != yearly["half_2"]).astype(int)
 			metric_label = "Standing half mismatch count"
+
+	if yearly is None or yearly.empty:
+		raise ValueError("No yearly data could be built from the filtered dataset.")
 
 	agg = (
 		yearly.groupby(["franchid_1", "franchid_2"], as_index=False)["metric_value"]
