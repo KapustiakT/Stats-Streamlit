@@ -251,8 +251,7 @@ text = (
 
 selection_state = st.altair_chart(chart + text, use_container_width=True, on_select="rerun", selection_mode="cell_select")
 
-st.subheader("Aggregated data")
-st.dataframe(agg.sort_values("total_metric_value", ascending=False), use_container_width=True)
+
 
 selected_points = selection_state.get("selection", {}).get("cell_select", []) if isinstance(selection_state, dict) else []
 
