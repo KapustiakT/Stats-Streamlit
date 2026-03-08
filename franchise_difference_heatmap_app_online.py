@@ -12,7 +12,7 @@ st.write(
 )
 
 APP_DIR = Path(__file__).parent
-DEFAULT_CSV_PATH = APP_DIR / "franchise_difference.csv"
+DEFAULT_CSV_PATH = APP_DIR / "win_diff.csv"
 
 @st.cache_data
 def load_data(csv_path_str: str) -> pd.DataFrame:
