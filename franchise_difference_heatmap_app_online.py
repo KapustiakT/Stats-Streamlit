@@ -153,7 +153,7 @@ def build_metric_data(filtered: pd.DataFrame, metric_name: str):
 			.merge(team_summary_2, on=["Year ID", "franchid_2"], how="left")
 		)
 		yearly["metric_value"] = (yearly["half_1"] != yearly["half_2"]).astype(int)
-		metric_label = "Standing half mismatch count"
+		metric_label = "Opposite Half Finishes:"
 
 	if yearly is None or yearly.empty:
 		raise ValueError("No yearly data could be built from the filtered dataset.")
