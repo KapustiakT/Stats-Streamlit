@@ -99,6 +99,7 @@ def build_team_year_records(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_metric_data(filtered: pd.DataFrame, metric_name: str):
+	yearly = None
 	all_teams = sorted(set(filtered["franchid_1"]).union(set(filtered["franchid_2"])))
 
 	team_year = build_team_year_records(filtered)
