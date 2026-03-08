@@ -263,7 +263,7 @@ chart = (
 			alt.Tooltip("team_1_win_pct_total:Q", format=".3f", title="Win %"),
 			alt.Tooltip("franchid_2:N", title="Team"),
 			alt.Tooltip("team_2_win_pct_total:Q", format=".3f", title="Win %"),
-			alt.Tooltip("total_metric_value:Q", format=",.2f", title=metric_label),
+			alt.Tooltip("total_metric_value:Q", format=",.2f", title=metric_label)
 		],
 		stroke=alt.condition(selection, alt.value("black"), alt.value(None)),
 		strokeWidth=alt.condition(selection, alt.value(2), alt.value(0)),
