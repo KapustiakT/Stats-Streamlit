@@ -101,49 +101,58 @@ def build_team_year_records(df: pd.DataFrame) -> pd.DataFrame:
 def build_metric_data(filtered: pd.DataFrame, metric_name: str):
 	all_teams = sorted(set(filtered["franchid_1"]).union(set(filtered["franchid_2"])))
 
+	team_year = build_team_year_records(filtered)
+	team_summary = pd.DataFrame()
+	if not team_year.empty:
+		team_summary = team_year[["Year ID", "team", "wins", "losses", "win_pct", "half", "rank_in_year"]].copy()
+
+	team_summary_1 = pd.DataFrame()
+	team_summary_2 = pd.DataFrame()
+	if not team_summary.empty:
+		team_summary_1 = team_summary.rename(columns={
+			"team": "franchid_1",
+			"wins": "wins_1_detail",
+			"losses": "losses_1_detail",
+			"win_pct": "win_pct_1",
+			"half": "half_1",
+			"rank_in_year": "rank_1",
+		})
+		team_summary_2 = team_summary.rename(columns={
+			"team": "franchid_2",
+			"wins": "wins_2_detail",
+			"losses": "losses_2_detail",
+			"win_pct": "win_pct_2",
+			"half": "half_2",
+			"rank_in_year": "rank_2",
+		})
+
 	if metric_name == "Abs difference":
 		yearly = (
 			filtered.groupby(["Year ID", "franchid_1", "franchid_2"], as_index=False)["abs differnce"]
 			.sum()
 			.rename(columns={"abs differnce": "metric_value"})
 		)
+		if not team_summary.empty:
+			yearly = (
+				yearly
+				.merge(team_summary_1, on=["Year ID", "franchid_1"], how="left")
+				.merge(team_summary_2, on=["Year ID", "franchid_2"], how="left")
+			)
 		metric_label = "Abs difference"
 	else:
-		team_year = build_team_year_records(filtered)
 		if team_year.empty:
 			raise ValueError(
 				"Standing half mismatch needs wins/losses columns for both teams. It accepts either W1/L1/W2/L2 or wins_1/losses_1/wins_2/losses_2."
 			)
 
-		team_1 = team_year[["Year ID", "team", "half", "wins", "losses", "win_pct", "rank_in_year"]].rename(
-			columns={
-				"team": "franchid_1",
-				"half": "half_1",
-				"wins": "wins_1_detail",
-				"losses": "losses_1_detail",
-				"win_pct": "win_pct_1",
-				"rank_in_year": "rank_1",
-			}
-		)
-		team_2 = team_year[["Year ID", "team", "half", "wins", "losses", "win_pct", "rank_in_year"]].rename(
-			columns={
-				"team": "franchid_2",
-				"half": "half_2",
-				"wins": "wins_2_detail",
-				"losses": "losses_2_detail",
-				"win_pct": "win_pct_2",
-				"rank_in_year": "rank_2",
-			}
-		)
-
-		yearly = (
-			filtered[["Year ID", "franchid_1", "franchid_2"]]
-			.drop_duplicates()
-			.merge(team_1, on=["Year ID", "franchid_1"], how="left")
-			.merge(team_2, on=["Year ID", "franchid_2"], how="left")
-		)
-		yearly["metric_value"] = (yearly["half_1"] != yearly["half_2"]).astype(int)
-		metric_label = "Standing half mismatch count"
+			yearly = (
+				filtered[["Year ID", "franchid_1", "franchid_2"]]
+				.drop_duplicates()
+				.merge(team_summary_1, on=["Year ID", "franchid_1"], how="left")
+				.merge(team_summary_2, on=["Year ID", "franchid_2"], how="left")
+			)
+			yearly["metric_value"] = (yearly["half_1"] != yearly["half_2"]).astype(int)
+			metric_label = "Standing half mismatch count"
 
 	agg = (
 		yearly.groupby(["franchid_1", "franchid_2"], as_index=False)["metric_value"]
@@ -151,12 +160,35 @@ def build_metric_data(filtered: pd.DataFrame, metric_name: str):
 		.rename(columns={"metric_value": "total_metric_value"})
 	)
 
+	if not team_year.empty:
+		pair_team_1 = (
+			yearly.groupby(["franchid_1", "franchid_2"], as_index=False)[["wins_1_detail", "losses_1_detail"]]
+			.sum(min_count=1)
+		)
+		pair_team_1["team_1_win_pct_total"] = pair_team_1["wins_1_detail"] / (pair_team_1["wins_1_detail"] + pair_team_1["losses_1_detail"])
+
+		pair_team_2 = (
+			yearly.groupby(["franchid_1", "franchid_2"], as_index=False)[["wins_2_detail", "losses_2_detail"]]
+			.sum(min_count=1)
+		)
+		pair_team_2["team_2_win_pct_total"] = pair_team_2["wins_2_detail"] / (pair_team_2["wins_2_detail"] + pair_team_2["losses_2_detail"])
+
+		agg = (
+			agg
+			.merge(pair_team_1[["franchid_1", "franchid_2", "team_1_win_pct_total"]], on=["franchid_1", "franchid_2"], how="left")
+			.merge(pair_team_2[["franchid_1", "franchid_2", "team_2_win_pct_total"]], on=["franchid_1", "franchid_2"], how="left")
+		)
+	else:
+		agg["team_1_win_pct_total"] = pd.NA
+		agg["team_2_win_pct_total"] = pd.NA
+
 	full_index = pd.MultiIndex.from_product([all_teams, all_teams], names=["franchid_1", "franchid_2"])
 	agg = (
 		agg.set_index(["franchid_1", "franchid_2"])
-		.reindex(full_index, fill_value=0)
+		.reindex(full_index)
 		.reset_index()
 	)
+	agg["total_metric_value"] = agg["total_metric_value"].fillna(0)
 
 	return yearly, agg, all_teams, metric_label
 
@@ -226,6 +258,8 @@ chart = (
 			alt.Tooltip("franchid_1:N", title="Team 1"),
 			alt.Tooltip("franchid_2:N", title="Team 2"),
 			alt.Tooltip("total_metric_value:Q", format=",.2f", title=metric_label),
+			alt.Tooltip("team_1_win_pct_total:Q", format=".3f", title="Team 1 win %"),
+			alt.Tooltip("team_2_win_pct_total:Q", format=".3f", title="Team 2 win %"),
 		],
 		stroke=alt.condition(selection, alt.value("black"), alt.value(None)),
 		strokeWidth=alt.condition(selection, alt.value(2), alt.value(0)),
@@ -267,7 +301,11 @@ if selected_points:
 
 	if metric_name == "Abs difference":
 		display_cols = ["Year ID", "metric_value"]
-		display_df = selected_years[display_cols].rename(columns={"metric_value": "Abs difference"})
+		display_df = selected_years[display_cols + ["win_pct_1", "win_pct_2"]].rename(columns={
+			"metric_value": "Abs difference",
+			"win_pct_1": f"{selected_team_1} win %",
+			"win_pct_2": f"{selected_team_2} win %",
+		})
 	else:
 		display_cols = [
 			"Year ID",
@@ -281,7 +319,7 @@ if selected_points:
 			"losses_2_detail",
 			"rank_2",
 		]
-		display_df = selected_years[display_cols].rename(columns={
+		display_df = selected_years[display_cols + ["win_pct_1", "win_pct_2"]].rename(columns={
 			"metric_value": "Different halves?",
 			"half_1": f"{selected_team_1} half",
 			"wins_1_detail": f"{selected_team_1} wins",
@@ -291,6 +329,8 @@ if selected_points:
 			"wins_2_detail": f"{selected_team_2} wins",
 			"losses_2_detail": f"{selected_team_2} losses",
 			"rank_2": f"{selected_team_2} rank",
+			"win_pct_1": f"{selected_team_1} win %",
+			"win_pct_2": f"{selected_team_2} win %",
 		})
 
 	st.dataframe(display_df, use_container_width=True)
