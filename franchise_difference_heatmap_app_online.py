@@ -259,8 +259,8 @@ chart = (
 			title=metric_label,
 		),
 		tooltip=[
-			alt.Tooltip("franchid_1:N", title="Team"),
-			alt.Tooltip("team_1_win_pct_total:Q", format=".3f", title="Win %"),
+			alt.Tooltip("franchid_1:N", title="Team "),
+			alt.Tooltip("team_1_win_pct_total:Q", format=".3f", title="Win % "),
 			alt.Tooltip("franchid_2:N", title="Team"),
 			alt.Tooltip("team_2_win_pct_total:Q", format=".3f", title="Win %"),
 			alt.Tooltip("total_metric_value:Q", format=",.2f", title=metric_label)
