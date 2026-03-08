@@ -329,11 +329,11 @@ if selected_points:
 			"wins_1_detail": f"{selected_team_1} wins",
 			"losses_1_detail": f"{selected_team_1} losses",
 			"rank_1": f"{selected_team_1} rank",
+			"win_pct_1": f"{selected_team_1} win %",
 			"half_2": f"{selected_team_2} half",
 			"wins_2_detail": f"{selected_team_2} wins",
 			"losses_2_detail": f"{selected_team_2} losses",
 			"rank_2": f"{selected_team_2} rank",
-			"win_pct_1": f"{selected_team_1} win %",
 			"win_pct_2": f"{selected_team_2} win %",
 		})
 
