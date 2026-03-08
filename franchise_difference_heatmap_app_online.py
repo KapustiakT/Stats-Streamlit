@@ -315,17 +315,15 @@ if selected_points:
 			"Year ID",
 			"metric_value",
 			"half_1",
-			"win_pct_1",
 			"wins_1_detail",
 			"losses_1_detail",
 			"rank_1",
 			"half_2",
-			"win_pct_2"
 			"wins_2_detail",
 			"losses_2_detail",
 			"rank_2",
 		]
-		display_df = selected_years[display_cols].rename(columns={
+		display_df = selected_years[display_cols + ["win_pct_1", "win_pct_2"]].rename(columns={
 			"metric_value": "Different halves?",
 			"half_1": f"{selected_team_1} half",
 			"wins_1_detail": f"{selected_team_1} wins",
