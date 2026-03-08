@@ -146,14 +146,14 @@ def build_metric_data(filtered: pd.DataFrame, metric_name: str):
 				"Standing half mismatch needs wins/losses columns for both teams. It accepts either W1/L1/W2/L2 or wins_1/losses_1/wins_2/losses_2."
 			)
 
-			yearly = (
-				filtered[["Year ID", "franchid_1", "franchid_2"]]
-				.drop_duplicates()
-				.merge(team_summary_1, on=["Year ID", "franchid_1"], how="left")
-				.merge(team_summary_2, on=["Year ID", "franchid_2"], how="left")
-			)
-			yearly["metric_value"] = (yearly["half_1"] != yearly["half_2"]).astype(int)
-			metric_label = "Standing half mismatch count"
+		yearly = (
+			filtered[["Year ID", "franchid_1", "franchid_2"]]
+			.drop_duplicates()
+			.merge(team_summary_1, on=["Year ID", "franchid_1"], how="left")
+			.merge(team_summary_2, on=["Year ID", "franchid_2"], how="left")
+		)
+		yearly["metric_value"] = (yearly["half_1"] != yearly["half_2"]).astype(int)
+		metric_label = "Standing half mismatch count"
 
 	if yearly is None or yearly.empty:
 		raise ValueError("No yearly data could be built from the filtered dataset.")
